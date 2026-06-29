@@ -7,3 +7,9 @@
 
 # Alloy runtime state
 **/alloy/data/
+
+# macOS
+.DS_Store
+
+# Raw dashboard exports (cleaned versions live in smseagle-exporter/dashboards/)
+dashboard-*.json

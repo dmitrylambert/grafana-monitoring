@@ -91,8 +91,38 @@ A ready-to-import Grafana dashboard lives at
 totals/queues, modem signal, SIM & network health, services, SMPP subsystems,
 firmware/support, and temperature/humidity.
 
-To import: in Grafana, **Dashboards → New → Import**, upload the JSON, and select
-your Prometheus data source when prompted.
+### How to import
+
+1. Get the JSON — either:
+   - download/copy [`dashboards/smseagle.json`](./dashboards/smseagle.json) from
+     this repo, or
+   - copy its raw contents to your clipboard.
+2. In Grafana, open the menu → **Dashboards**.
+3. Click **New** (top right) → **Import**.
+4. Provide the dashboard:
+   - **Upload dashboard JSON file** and select `smseagle.json`, **or**
+   - paste the JSON into the **Import via dashboard JSON model** box, then click
+     **Load**.
+5. On the import screen, set:
+   - **Name** / **Folder** — optional, change if you like.
+   - **Prometheus** data source — pick the data source that receives your
+     SMSEagle metrics (e.g. your Grafana Cloud Prometheus). The dashboard ships
+     with the source parameterized, so it will prompt you here.
+6. Click **Import**.
+
+The dashboard opens on the **last 6 hours**. If panels read "No data", confirm
+metrics are arriving (`{__name__=~"smseagle_.+"}` in **Explore**) and that the
+selected data source is correct.
+
+> While the stack runs against the **mock**, values are static — status panels
+> show green/OK and graphs are flat. Switch `.env` to the live device for real
+> readings.
+
+### Updating an existing copy
+
+Re-importing the same JSON with the **same UID** overwrites your copy
+(Grafana will warn before replacing). To keep edits, import under a new name or
+change the dashboard UID before importing.
 
 ## Refreshing the mock snapshots
 

@@ -1,0 +1,14 @@
+services:
+  smseagle-alert-webhook:
+    build: .
+    container_name: smseagle-alert-webhook
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "9099:9099" # Grafana webhook contact point posts here
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:9099/healthz')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

@@ -1,0 +1,42 @@
+services:
+  alloy:
+    image: grafana/alloy:latest
+    container_name: alloy
+    restart: unless-stopped
+    ports:
+      - "12345:12345" # Alloy UI / debug endpoint
+    env_file:
+      - .env
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    depends_on:
+      - json-exporter
+
+  # Offline mock of the SMSEagle device: replays captured APIv2 JSON responses
+  # at the same paths. Point SMSEAGLE_API_URL at it to develop without the device.
+  mock-smseagle:
+    image: nginx:alpine
+    container_name: mock-smseagle
+    restart: unless-stopped
+    ports:
+      - "8088:80" # browse/curl the mock from the host
+    volumes:
+      - ./mock/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./mock/api:/srv/mock/api:ro
+
+  # Converts SMSEagle APIv2 JSON responses into Prometheus metrics for Alloy.
+  json-exporter:
+    image: quay.io/prometheuscommunity/json-exporter:latest
+    container_name: json-exporter
+    restart: unless-stopped
+    ports:
+      - "7979:7979" # exporter UI / /probe endpoint (local inspection)
+    volumes:
+      - ./json-exporter/config.yml:/config.yml:ro
+    command:
+      - --config.file=/config.yml

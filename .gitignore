@@ -1,0 +1,9 @@
+# Secrets — never commit
+.env
+**/.env
+
+# Local agent/editor settings
+.claude/
+
+# Alloy runtime state
+**/alloy/data/

@@ -1,0 +1,143 @@
+// Grafana Alloy configuration
+// Scrapes SMSEagle hardware + service metrics (via the json-exporter sidecar)
+// and ships them to Grafana Cloud. Switch the data source (live device vs the
+// offline mock) by editing SMSEAGLE_API_URL in .env.
+
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+// --- Grafana Cloud remote_write sink ---
+// Credentials are injected from the .env file (sys.env) — never hardcoded here.
+prometheus.remote_write "grafanacloud" {
+  endpoint {
+    url = sys.env("GRAFANA_CLOUD_PROM_URL")
+
+    basic_auth {
+      username = sys.env("GRAFANA_CLOUD_PROM_USER")
+      password = sys.env("GRAFANA_CLOUD_PROM_TOKEN")
+    }
+  }
+}
+
+// --- Alloy self metrics (liveness) ---
+prometheus.exporter.self "alloy" {}
+
+prometheus.scrape "alloy_self" {
+  targets    = prometheus.exporter.self.alloy.targets
+  forward_to = [prometheus.remote_write.grafanacloud.receiver]
+}
+
+// Helpers: every target is a /probe call to json-exporter; the SMSEagle URL +
+// token are injected from .env. json-exporter fetches that URL and returns
+// Prometheus metrics. Token is passed as the APIv2 `access_token` query param.
+//   __param_module = which mapping in json-exporter/config.yml to apply
+//   __param_target = the SMSEagle endpoint json-exporter should fetch
+
+// --- SMSEagle modem metrics (signal, enabled, sim, network registration) ---
+prometheus.scrape "smseagle_modem" {
+  targets = [{
+    __address__      = "json-exporter:7979",
+    __metrics_path__ = "/probe",
+    __param_module   = "smseagle_modem",
+    __param_target   = sys.env("SMSEAGLE_API_URL") + "/modem/full_info?access_token=" + sys.env("SMSEAGLE_ACCESS_TOKEN"),
+    instance         = "smseagle-192.168.1.213",
+  }]
+  scrape_interval = "30s"
+  forward_to      = [prometheus.remote_write.grafanacloud.receiver]
+}
+
+// --- Message queue counts per channel (folder is in the metric name) ---
+prometheus.scrape "smseagle_messages" {
+  targets = [
+    {
+      __address__ = "json-exporter:7979", __metrics_path__ = "/probe",
+      __param_module = "smseagle_messages_full",
+      __param_target = sys.env("SMSEAGLE_API_URL") + "/messages/count?access_token=" + sys.env("SMSEAGLE_ACCESS_TOKEN"),
+      instance = "smseagle-192.168.1.213", channel = "sms",
+    },
+    {
+      __address__ = "json-exporter:7979", __metrics_path__ = "/probe",
+      __param_module = "smseagle_messages_full",
+      __param_target = sys.env("SMSEAGLE_API_URL") + "/messages/whatsapp/count?access_token=" + sys.env("SMSEAGLE_ACCESS_TOKEN"),
+      instance = "smseagle-192.168.1.213", channel = "whatsapp",
+    },
+    {
+      __address__ = "json-exporter:7979", __metrics_path__ = "/probe",
+      __param_module = "smseagle_messages_basic",
+      __param_target = sys.env("SMSEAGLE_API_URL") + "/messages/signal/count?access_token=" + sys.env("SMSEAGLE_ACCESS_TOKEN"),
+      instance = "smseagle-192.168.1.213", channel = "signal",
+    },
+    {
+      __address__ = "json-exporter:7979", __metrics_path__ = "/probe",
+      __param_module = "smseagle_messages_basic",
+      __param_target = sys.env("SMSEAGLE_API_URL") + "/messages/email/count?access_token=" + sys.env("SMSEAGLE_ACCESS_TOKEN"),
+      instance = "smseagle-192.168.1.213", channel = "email",
+    },
+  ]
+  scrape_interval = "30s"
+  forward_to      = [prometheus.remote_write.grafanacloud.receiver]
+}
+
+// --- Device info + service status ---
+prometheus.scrape "smseagle_device" {
+  targets = [
+    {
+      __address__ = "json-exporter:7979", __metrics_path__ = "/probe",
+      __param_module = "smseagle_device_version",
+      __param_target = sys.env("SMSEAGLE_API_URL") + "/device/version?access_token=" + sys.env("SMSEAGLE_ACCESS_TOKEN"),
+      instance = "smseagle-192.168.1.213",
+    },
+    {
+      __address__ = "json-exporter:7979", __metrics_path__ = "/probe",
+      __param_module = "smseagle_support",
+      __param_target = sys.env("SMSEAGLE_API_URL") + "/device/support?access_token=" + sys.env("SMSEAGLE_ACCESS_TOKEN"),
+      instance = "smseagle-192.168.1.213",
+    },
+    {
+      __address__ = "json-exporter:7979", __metrics_path__ = "/probe",
+      __param_module = "smseagle_ha_failover",
+      __param_target = sys.env("SMSEAGLE_API_URL") + "/device/ha_failover/status?access_token=" + sys.env("SMSEAGLE_ACCESS_TOKEN"),
+      instance = "smseagle-192.168.1.213",
+    },
+    {
+      __address__ = "json-exporter:7979", __metrics_path__ = "/probe",
+      __param_module = "smseagle_smpp",
+      __param_target = sys.env("SMSEAGLE_API_URL") + "/device/smpp/status?access_token=" + sys.env("SMSEAGLE_ACCESS_TOKEN"),
+      instance = "smseagle-192.168.1.213",
+    },
+    {
+      __address__ = "json-exporter:7979", __metrics_path__ = "/probe",
+      __param_module = "smseagle_service",
+      __param_target = sys.env("SMSEAGLE_API_URL") + "/device/snmp/status?access_token=" + sys.env("SMSEAGLE_ACCESS_TOKEN"),
+      instance = "smseagle-192.168.1.213", service = "snmp",
+    },
+    {
+      __address__ = "json-exporter:7979", __metrics_path__ = "/probe",
+      __param_module = "smseagle_service",
+      __param_target = sys.env("SMSEAGLE_API_URL") + "/device/mqtt/status?access_token=" + sys.env("SMSEAGLE_ACCESS_TOKEN"),
+      instance = "smseagle-192.168.1.213", service = "mqtt",
+    },
+    {
+      __address__ = "json-exporter:7979", __metrics_path__ = "/probe",
+      __param_module = "smseagle_service",
+      __param_target = sys.env("SMSEAGLE_API_URL") + "/device/email2sms/status?access_token=" + sys.env("SMSEAGLE_ACCESS_TOKEN"),
+      instance = "smseagle-192.168.1.213", service = "email2sms",
+    },
+    {
+      __address__ = "json-exporter:7979", __metrics_path__ = "/probe",
+      __param_module = "smseagle_service",
+      __param_target = sys.env("SMSEAGLE_API_URL") + "/device/email2sms_poller/status?access_token=" + sys.env("SMSEAGLE_ACCESS_TOKEN"),
+      instance = "smseagle-192.168.1.213", service = "email2sms_poller",
+    },
+    {
+      __address__ = "json-exporter:7979", __metrics_path__ = "/probe",
+      __param_module = "smseagle_service",
+      __param_target = sys.env("SMSEAGLE_API_URL") + "/device/data_conn/status?access_token=" + sys.env("SMSEAGLE_ACCESS_TOKEN"),
+      instance = "smseagle-192.168.1.213", service = "data_conn",
+    },
+  ]
+  scrape_interval = "30s"
+  forward_to      = [prometheus.remote_write.grafanacloud.receiver]
+}

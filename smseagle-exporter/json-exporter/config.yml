@@ -1,0 +1,134 @@
+---
+# prometheus-community/json-exporter module config.
+# Converts SMSEagle APIv2 JSON responses into Prometheus metrics.
+# The target URL (incl. ?access_token=...) is supplied by Alloy per scrape.
+# Paths use the Kubernetes JSONPath syntax: {.field}
+# SMSEagle uses HTTPS + self-signed cert on the LAN, hence insecure_skip_verify
+# (harmless when pointed at the http mock).
+modules:
+
+  # --- /modem/full_info : array of modems ---------------------------------
+  smseagle_modem:
+    http_client_config:
+      tls_config:
+        insecure_skip_verify: true
+    metrics:
+      - name: smseagle_modem
+        help: "SMSEagle modem signal strength (0-100)."
+        type: object
+        path: '{[*]}'
+        labels:
+          modem_no: '{.modem_no}'
+          net_name: '{.net_name}'
+          sim_status: '{.sim_status}'
+          registration_status: '{.sim_network_registration_status}'
+          imei: '{.imei}'
+        values:
+          signal_strength: '{.signal_strength}'
+
+      - name: smseagle_modem
+        help: "SMSEagle modem enabled state (1 = enabled, 0 = disabled)."
+        type: object
+        path: '{[*]}'
+        labels:
+          modem_no: '{.modem_no}'
+        values:
+          enabled: '{.modem_enabled}'
+
+      - name: smseagle_modem_sim
+        help: "SIM status (label sim_status carries the state; value always 1)."
+        type: object
+        path: '{[*]}'
+        labels:
+          modem_no: '{.modem_no}'
+          sim_status: '{.sim_status}'
+        values:
+          status: 1
+
+      - name: smseagle_modem_network
+        help: "Network registration (label registration_status carries the state; value always 1)."
+        type: object
+        path: '{[*]}'
+        labels:
+          modem_no: '{.modem_no}'
+          registration_status: '{.sim_network_registration_status}'
+        values:
+          registration: 1
+
+  # --- /messages[/<channel>]/count : flat object --------------------------
+  # channel label is added by Alloy per scrape target.
+  smseagle_messages_full:
+    http_client_config:
+      tls_config: { insecure_skip_verify: true }
+    metrics:
+      - { name: smseagle_messages_inbox,     help: "Messages in inbox.",     path: '{.inbox}' }
+      - { name: smseagle_messages_outbox,    help: "Messages pending in outbox.", path: '{.outbox}' }
+      - { name: smseagle_messages_sent,      help: "Messages sent.",         path: '{.sent}' }
+      - { name: smseagle_messages_error,     help: "Messages in error.",     path: '{.error}' }
+      - { name: smseagle_messages_delivered, help: "Messages delivered.",    path: '{.delivered}' }
+
+  smseagle_messages_basic:
+    http_client_config:
+      tls_config: { insecure_skip_verify: true }
+    metrics:
+      - { name: smseagle_messages_inbox,  help: "Messages in inbox.",      path: '{.inbox}' }
+      - { name: smseagle_messages_outbox, help: "Messages pending in outbox.", path: '{.outbox}' }
+      - { name: smseagle_messages_sent,   help: "Messages sent.",          path: '{.sent}' }
+      - { name: smseagle_messages_error,  help: "Messages in error.",      path: '{.error}' }
+
+  # --- /device/<svc>/status : { "enabled": bool } -------------------------
+  # service label is added by Alloy per scrape target.
+  smseagle_service:
+    http_client_config:
+      tls_config: { insecure_skip_verify: true }
+    metrics:
+      - name: smseagle_service_enabled
+        help: "Whether the SMSEagle service is enabled (1) or disabled (0)."
+        path: '{.enabled}'
+
+  # --- /device/smpp/status : multiple booleans ----------------------------
+  smseagle_smpp:
+    http_client_config:
+      tls_config: { insecure_skip_verify: true }
+    metrics:
+      - { name: smseagle_smpp_enabled,    help: "SMPP enabled.",         path: '{.enabled}' }
+      - { name: smseagle_smpp_connection, help: "SMPP connection up.",   path: '{.smpp_connection}' }
+      - { name: smseagle_smpp_core,       help: "SMPP core service up.", path: '{.core_service}' }
+      - { name: smseagle_smpp_sms,        help: "SMPP sms service up.",  path: '{.sms_service}' }
+      - { name: smseagle_smpp_sql,        help: "SMPP sql service up.",  path: '{.sql_service}' }
+
+  # --- /device/ha_failover/status : { "status": "disabled" } --------------
+  smseagle_ha_failover:
+    http_client_config:
+      tls_config: { insecure_skip_verify: true }
+    metrics:
+      - name: smseagle_ha_failover
+        help: "HA failover (label status carries the state; value always 1)."
+        type: object
+        path: '{$}'
+        labels:
+          status: '{.status}'
+        values:
+          state: 1
+
+  # --- /device/version : { current_version, update_available } ------------
+  smseagle_device_version:
+    http_client_config:
+      tls_config: { insecure_skip_verify: true }
+    metrics:
+      - name: smseagle_update_available
+        help: "Firmware update available (1) or not (0). Label carries current version."
+        path: '{.update_available}'
+        labels:
+          version: '{.current_version}'
+
+  # --- /device/support : { date, active } ---------------------------------
+  smseagle_support:
+    http_client_config:
+      tls_config: { insecure_skip_verify: true }
+    metrics:
+      - name: smseagle_support_active
+        help: "Support contract active (1) or not (0). Label carries expiry date."
+        path: '{.active}'
+        labels:
+          expiry_date: '{.date}'

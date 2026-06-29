@@ -27,17 +27,46 @@ SMSEagle's Email2SMS poller instead.
    ```
 3. Health check: `curl http://localhost:9099/healthz` → `ok`.
 
-## Wire up Grafana
+## Wire up your Grafana
 
-1. **Contact point** — *Alerting → Contact points → Add*:
+> This is a **device-bound** path: your Grafana must be able to reach the adapter
+> (and the adapter reaches the SMSEagle). A **self-hosted Grafana on the same
+> LAN** is the clean fit. Grafana Cloud cannot reach a private LAN — for that,
+> use SMSEagle's Email2SMS poller instead.
+
+### Option A — Grafana UI
+
+1. **Add a contact point** — *Alerting → Contact points → Add contact point*:
+   - Name: `SMSEagle SMS`
    - Integration: **Webhook**
-   - URL: `http://smseagle-alert-webhook:9099/` (same Docker network) or
-     `http://<host-ip>:9099/`
-   - Method: `POST`
-2. **Notification policy** — route the alerts you want to SMS to this contact point.
-3. **Test** — use Grafana's "Test" button on the contact point, or set
-   `SMSEAGLE_TEST_MODE=true` in `.env` first so SMSEagle validates the request
-   **without delivering** a real SMS. Flip it back to `false` to go live.
+   - URL: the adapter, reachable from Grafana:
+     - same Docker network → `http://smseagle-alert-webhook:9099/`
+     - same host (port published) → `http://host.docker.internal:9099/`
+       (add `extra_hosts: ["host.docker.internal:host-gateway"]` to the Grafana service)
+     - elsewhere on the LAN → `http://<adapter-host-ip>:9099/`
+   - HTTP Method: `POST`
+   - Click **Test** to send a sample notification (set `SMSEAGLE_TEST_MODE=true`
+     first to validate without delivering a real SMS).
+2. **Route alerts to it** — *Alerting → Notification policies*: set this contact
+   point as the default receiver, or add a matching route.
+3. **Create an alert rule** on your SMSEagle metrics (e.g. `min(smseagle_modem_signal_strength) < 30`).
+
+### Option B — Grafana provisioning files
+
+Copy the examples in [`examples/grafana-provisioning/`](./examples/grafana-provisioning/)
+into your Grafana provisioning directory (typically
+`/etc/grafana/provisioning/alerting/`):
+
+- [`contactpoints.yaml`](./examples/grafana-provisioning/contactpoints.yaml) — the webhook contact point
+- [`alert-rule.example.yaml`](./examples/grafana-provisioning/alert-rule.example.yaml) — a sample "signal low" rule (set your Prometheus datasource UID + threshold)
+
+Then point your notification policy's default receiver at `SMSEagle SMS`.
+
+### Testing safely
+
+Keep `SMSEAGLE_TEST_MODE=true` while wiring things up — SMSEagle validates each
+request but does **not** deliver (it returns `id: 0`). Flip to `false` for real
+delivery.
 
 ## Message format
 

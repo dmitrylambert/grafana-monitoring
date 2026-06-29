@@ -1,0 +1,45 @@
+# Example Grafana alert rule that sends an SMS when a modem's signal drops.
+# Adjust `datasourceUid` to your Prometheus data source, and the threshold to taste.
+# This routes to the "SMSEagle SMS" contact point via your notification policy
+# (set that contact point as the default receiver, or add a matching route).
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: smseagle
+    folder: SMSEagle
+    interval: 1m
+    rules:
+      - uid: smseagle-signal-low
+        title: SMSEagle Modem Signal Low
+        condition: C
+        for: 5m            # must stay below threshold for 5m before firing
+        noDataState: NoData
+        execErrState: Error
+        annotations:
+          summary: "Modem signal {{ $values.A }} below 30"
+        labels:
+          severity: warning
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: YOUR_PROMETHEUS_UID
+            model:
+              datasource: { type: prometheus, uid: YOUR_PROMETHEUS_UID }
+              expr: min(smseagle_modem_signal_strength)
+              instant: true
+              range: false
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              datasource: { type: __expr__, uid: __expr__ }
+              expression: A
+              type: threshold
+              refId: C
+              conditions:
+                - type: query
+                  evaluator: { type: lt, params: [30] }
+                  operator: { type: and }
+                  query: { params: [A] }
+                  reducer: { type: last }

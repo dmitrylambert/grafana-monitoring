@@ -1,0 +1,21 @@
+# Example Grafana contact point that routes alerts to this webhook adapter.
+# Drop into your Grafana provisioning dir (e.g. /etc/grafana/provisioning/alerting/)
+# or recreate the same settings in the UI (Alerting -> Contact points).
+#
+# URL notes:
+#   - Grafana in the same Docker network as the adapter:  http://smseagle-alert-webhook:9099/
+#   - Grafana on the same host (adapter port published):  http://host.docker.internal:9099/
+#     (add `extra_hosts: ["host.docker.internal:host-gateway"]` to the Grafana service)
+#   - Grafana elsewhere on the LAN:                        http://<adapter-host-ip>:9099/
+apiVersion: 1
+
+contactPoints:
+  - orgId: 1
+    name: SMSEagle SMS
+    receivers:
+      - uid: smseagle-sms-webhook
+        type: webhook
+        settings:
+          url: http://smseagle-alert-webhook:9099/
+          httpMethod: POST
+        disableResolveMessage: false

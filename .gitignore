@@ -13,3 +13,6 @@
 
 # Raw dashboard exports (cleaned versions live in smseagle-exporter/dashboards/)
 dashboard-*.json
+
+# Local-only Grafana+Prometheus test stack (not part of the template)
+local-grafana/

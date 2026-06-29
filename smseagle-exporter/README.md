@@ -102,3 +102,15 @@ a live device, point `.env` at the live device and run:
    object).
 2. Add a scrape target in `alloy/config.alloy`.
 3. `docker compose restart json-exporter alloy`.
+
+---
+
+### Need help with your project?
+
+[**www.dmitrylambert.com**](https://www.dmitrylambert.com)
+
+- 🛠️ **Custom development**
+- 📊 **Monitoring & Observability**
+- 🎬 **Promotional videos**
+
+Connect: [Dmitry Lambert (LinkedIn)](https://www.linkedin.com/in/dmitry-lambert/) · [KorFlux (LinkedIn)](https://www.linkedin.com/company/korflux/)

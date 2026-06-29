@@ -132,3 +132,37 @@ modules:
         path: '{.active}'
         labels:
           expiry_date: '{.date}'
+
+  # --- /device/temperature_sensor/<id>/read : { temperature, humidity } ----
+  # sensor_id label is taken from the response. Scraped with ?scale=celsius.
+  smseagle_temperature:
+    http_client_config:
+      tls_config: { insecure_skip_verify: true }
+    metrics:
+      - name: smseagle_temperature_celsius
+        help: "Temperature sensor reading in Celsius."
+        path: '{.temperature}'
+        labels:
+          sensor_id: '{.sensor_id}'
+      - name: smseagle_humidity_percent
+        help: "Humidity sensor reading in percent."
+        path: '{.humidity}'
+        labels:
+          sensor_id: '{.sensor_id}'
+
+  # --- /device/temperature_sensor/<id>/status : { enabled, status } --------
+  smseagle_temperature_status:
+    http_client_config:
+      tls_config: { insecure_skip_verify: true }
+    metrics:
+      - name: smseagle_temperature_sensor_enabled
+        help: "Temperature sensor enabled (1) or not (0)."
+        path: '{.enabled}'
+      - name: smseagle_temperature_sensor
+        help: "Temperature sensor status (label carries state; value always 1)."
+        type: object
+        path: '{$}'
+        labels:
+          status: '{.status}'
+        values:
+          status: 1

@@ -31,6 +31,8 @@ endpoints=(
   "device/smpp/status"
   "device/mqtt/status"
   "device/digital_io/external"
+  "device/temperature_sensor/1/status"
+  "device/temperature_sensor/1/read"
 )
 # Per-modem endpoints (modem_no in 1 2)
 modem_paths=(
@@ -51,6 +53,7 @@ done
 ok=0; skip=0
 for ep in "${endpoints[@]}"; do
   url="$BASE/$ep?access_token=$TOKEN"
+  [[ "$ep" == *temperature_sensor/*/read ]] && url="$url&scale=celsius"
   body="$(curl -sk -m 10 -w $'\n%{http_code}' "$url")"
   code="${body##*$'\n'}"
   json="${body%$'\n'*}"

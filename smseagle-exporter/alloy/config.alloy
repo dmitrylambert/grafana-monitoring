@@ -137,6 +137,18 @@ prometheus.scrape "smseagle_device" {
       __param_target = sys.env("SMSEAGLE_API_URL") + "/device/data_conn/status?access_token=" + sys.env("SMSEAGLE_ACCESS_TOKEN"),
       instance = "smseagle-192.168.1.213", service = "data_conn",
     },
+    {
+      __address__ = "json-exporter:7979", __metrics_path__ = "/probe",
+      __param_module = "smseagle_temperature",
+      __param_target = sys.env("SMSEAGLE_API_URL") + "/device/temperature_sensor/1/read?scale=celsius&access_token=" + sys.env("SMSEAGLE_ACCESS_TOKEN"),
+      instance = "smseagle-192.168.1.213",
+    },
+    {
+      __address__ = "json-exporter:7979", __metrics_path__ = "/probe",
+      __param_module = "smseagle_temperature_status",
+      __param_target = sys.env("SMSEAGLE_API_URL") + "/device/temperature_sensor/1/status?access_token=" + sys.env("SMSEAGLE_ACCESS_TOKEN"),
+      instance = "smseagle-192.168.1.213",
+    },
   ]
   scrape_interval = "30s"
   forward_to      = [prometheus.remote_write.grafanacloud.receiver]

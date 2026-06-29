@@ -70,6 +70,10 @@ simply ignores it — any dummy value works in mock mode.
 | `smseagle_service_enabled` | `service` (snmp/mqtt/email2sms/email2sms_poller/data_conn) | `/device/<svc>/status` |
 | `smseagle_smpp_{enabled,connection,core,sms,sql}` | – | `/device/smpp/status` |
 | `smseagle_ha_failover_state` | `status` (value=1) | `/device/ha_failover/status` |
+| `smseagle_temperature_celsius` | `sensor_id` | `/device/temperature_sensor/<id>/read` |
+| `smseagle_humidity_percent` | `sensor_id` | `/device/temperature_sensor/<id>/read` |
+| `smseagle_temperature_sensor_enabled` | – | `/device/temperature_sensor/<id>/status` |
+| `smseagle_temperature_sensor_status` | `status` (value=1) | `/device/temperature_sensor/<id>/status` |
 
 ### Example alert queries
 

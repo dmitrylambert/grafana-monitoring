@@ -84,6 +84,16 @@ smseagle_modem_sim_status{sim_status!="Operational"}     # SIM problem
 smseagle_modem_signal_strength < 30                      # weak signal
 ```
 
+## Dashboard
+
+A ready-to-import Grafana dashboard lives at
+[`dashboards/smseagle.json`](./dashboards/smseagle.json) — panels for message
+totals/queues, modem signal, SIM & network health, services, SMPP subsystems,
+firmware/support, and temperature/humidity.
+
+To import: in Grafana, **Dashboards → New → Import**, upload the JSON, and select
+your Prometheus data source when prompted.
+
 ## Refreshing the mock snapshots
 
 The files under `mock/api/v2/` are captured API responses. To refresh them from

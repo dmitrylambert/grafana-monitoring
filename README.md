@@ -18,3 +18,7 @@ fill in a `.env`, and `docker compose up`.
 - Every project has its own `README.md`, `docker-compose.yml`, and `.env.example`.
 - Secrets live only in a gitignored `.env` (see each project's `.env.example`).
 - Metrics are exposed in Prometheus format and pushed to Grafana Cloud via Alloy.
+
+## License
+
+[Apache License 2.0](./LICENSE).

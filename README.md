@@ -22,3 +22,13 @@ fill in a `.env`, and `docker compose up`.
 ## License
 
 [Apache License 2.0](./LICENSE).
+
+---
+
+### Need help with your project?
+
+[**www.dmitrylambert.com**](https://www.dmitrylambert.com)
+
+- 🛠️ **Custom development**
+- 📊 **Monitoring & Observability**
+- 🎬 **Promotional videos**

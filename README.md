@@ -32,3 +32,5 @@ fill in a `.env`, and `docker compose up`.
 - 🛠️ **Custom development**
 - 📊 **Monitoring & Observability**
 - 🎬 **Promotional videos**
+
+Connect: [Dmitry Lambert (LinkedIn)](https://www.linkedin.com/in/dmitry-lambert/) · [KorFlux (LinkedIn)](https://www.linkedin.com/company/korflux/)

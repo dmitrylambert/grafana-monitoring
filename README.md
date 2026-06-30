@@ -11,7 +11,7 @@ fill in a `.env`, and `docker compose up`.
 
 | Project | Description |
 |---------|-------------|
-| [`smseagle-exporter`](./smseagle-exporter) | Monitor an [SMSEagle](https://www.smseagle.eu/) hardware SMS gateway via its APIv2 — modem signal, SIM/network health, message queue, and device/service status. Includes an offline mock for development without the device. |
+| [`smseagle-monitoring`](./smseagle-monitoring) | Monitor an [SMSEagle](https://www.smseagle.eu/) hardware SMS gateway via its APIv2 — modem signal, SIM/network health, message queue, and device/service status. Includes a Grafana dashboard and an offline mock for development without the device. |
 | [`smseagle-alert-webhook`](./smseagle-alert-webhook) | Use an SMSEagle gateway as the SMS notifier for Grafana alerts. A small webhook service that turns Grafana alert notifications into SMS via the APIv2 send endpoint. Best with self-hosted Grafana on the same LAN. |
 
 ## Conventions

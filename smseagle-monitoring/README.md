@@ -1,4 +1,4 @@
-# smseagle-exporter
+# smseagle-monitoring
 
 Monitor an [SMSEagle](https://www.smseagle.eu/) hardware SMS gateway and ship
 its metrics to **Grafana Cloud**. All data is pulled from the **SMSEagle APIv2**

@@ -11,7 +11,7 @@
 # macOS
 .DS_Store
 
-# Raw dashboard exports (cleaned versions live in smseagle-exporter/dashboards/)
+# Raw dashboard exports (cleaned versions live in smseagle-monitoring/dashboards/)
 dashboard-*.json
 
 # Raw/unredacted screenshot originals in repo root (redacted copies live in dashboards/)

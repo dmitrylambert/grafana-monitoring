@@ -91,6 +91,9 @@ A ready-to-import Grafana dashboard lives at
 totals/queues, modem signal, SIM & network health, services, SMPP subsystems,
 firmware/support, and temperature/humidity.
 
+![SMSEagle dashboard — modem signal, SIM/network, services, temperature](./dashboards/screenshot-1.png)
+![SMSEagle dashboard — message totals, channels, firmware & support](./dashboards/screenshot-2.png)
+
 ### How to import
 
 1. Get the JSON — either:

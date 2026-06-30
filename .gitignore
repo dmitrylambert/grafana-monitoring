@@ -14,5 +14,8 @@
 # Raw dashboard exports (cleaned versions live in smseagle-exporter/dashboards/)
 dashboard-*.json
 
+# Raw/unredacted screenshot originals in repo root (redacted copies live in dashboards/)
+/dashboard_*.png
+
 # Local-only Grafana+Prometheus test stack (not part of the template)
 local-grafana/

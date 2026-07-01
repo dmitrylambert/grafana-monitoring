@@ -70,38 +70,38 @@ def log(*a):
 
 
 def build_text(payload):
-    """Turn a Grafana webhook payload into a concise SMS body."""
-    status = str(payload.get("status", "")).upper()
+    """Build the SMS/spoken body from the alert.
+
+    Prepends a status word — "PROBLEM." when firing, "RESOLVED." when resolved —
+    then the alert's own message annotation verbatim (message / summary /
+    description, in that order) so what you write on the rule is exactly what
+    gets sent or read aloud, with no grouped-label title or firing counts. When
+    no annotation exists we fall back to the alert name.
+    """
     alerts = payload.get("alerts", []) or []
-    names = []
+    status = str(payload.get("status", "")).lower()
+    prefix = {"firing": "PROBLEM.", "resolved": "RESOLVED."}.get(status, "")
+
+    msgs = []
     for a in alerts:
-        labels = a.get("labels", {}) or {}
-        names.append(labels.get("alertname", "alert"))
-    # de-dupe, keep order
-    seen, uniq = set(), []
-    for n in names:
-        if n not in seen:
-            seen.add(n)
-            uniq.append(n)
+        ann = a.get("annotations", {}) or {}
+        m = ann.get("message") or ann.get("summary") or ann.get("description")
+        m = (m or "").strip()
+        if m and m not in msgs:
+            msgs.append(m)
+    body = " ".join(msgs)
 
-    firing = sum(1 for a in alerts if a.get("status") == "firing")
-    resolved = sum(1 for a in alerts if a.get("status") == "resolved")
+    # Fallback only when the rule carries no message annotation.
+    if not body:
+        names = []
+        for a in alerts:
+            n = (a.get("labels", {}) or {}).get("alertname")
+            if n and n not in names:
+                names.append(n)
+        body = ", ".join(names) or payload.get("title") or "Alert"
 
-    header = payload.get("title") or f"[{status}] " + ", ".join(uniq)
-    parts = [header]
-
-    # Add the first alert's summary/description if present and short.
-    if alerts:
-        ann = alerts[0].get("annotations", {}) or {}
-        detail = ann.get("summary") or ann.get("description")
-        if detail and detail not in header:
-            parts.append(detail)
-
-    if firing or resolved:
-        parts.append(f"(firing:{firing} resolved:{resolved})")
-
-    text = " | ".join(p for p in parts if p)
-    return text[:480]  # keep it sane; SMSEagle splits into multipart as needed
+    text = f"{prefix} {body}".strip() if prefix else body
+    return text[:480]  # SMSEagle splits SMS into multipart as needed
 
 
 def get_label(payload, name):

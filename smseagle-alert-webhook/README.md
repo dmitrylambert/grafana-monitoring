@@ -102,12 +102,20 @@ delivery.
 
 ## Message format
 
-The SMS contains the alert title, the first alert's summary/description, and a
-firing/resolved count, e.g.:
+The body is a status word followed by your alert's message annotation
+**verbatim** — no grouped-label title, no firing counts. The status word is
+`PROBLEM.` when firing and `RESOLVED.` when the alert clears:
 
 ```
-[FIRING:1] HighOutbox | SMS outbox > 20 on smseagle-192.168.1.213 | (firing:1 resolved:0)
+PROBLEM. SMS outbox > 20 on smseagle-192.168.1.213
+RESOLVED. SMS outbox > 20 on smseagle-192.168.1.213
 ```
+
+The message is taken from the alert's `message`, `summary`, or `description`
+annotation (first one present) — so what you type on the rule is exactly what's
+sent or read aloud. If a rule has no annotation, it falls back to the alert name
+(e.g. `PROBLEM. HighOutbox`). This matters most for **voice calls**, where
+reading labels and counts aloud is unpleasant.
 
 ## Configuration
 
@@ -124,3 +132,33 @@ firing/resolved count, e.g.:
 | `SMSEAGLE_TEST_MODE` | `true` = validate without delivering |
 | `SMSEAGLE_INSECURE_TLS` | `true` = accept the device's self-signed cert |
 | `LISTEN_ADDR` | Listen address, default `0.0.0.0:9099` |
+
+## Resolved notifications
+
+Grafana sends a notification on **firing** and again on **resolved** — so by
+default you get a second SMS/call (reading `RESOLVED. …`) when the alert clears.
+To turn resolved off, tick **"Disable resolved message"** on the contact point
+(*Alerting → Contact points →* edit → the integration's optional settings). It's
+per contact point, so it affects both SMS and voice through this adapter.
+
+## Troubleshooting
+
+- **Nothing is delivered / labels seem ignored, but Grafana runs in Docker** —
+  the contact point URL must be reachable *from the Grafana container*. Inside a
+  container, `http://localhost:9099` is Grafana itself, not the adapter. Use
+  `http://host.docker.internal:9099/` (needs `extra_hosts:
+  ["host.docker.internal:host-gateway"]` on the Grafana service) or the adapter's
+  container name / LAN IP. `localhost` only works when Grafana runs natively.
+- **Edited `app.py` but behavior didn't change** — a running container keeps its
+  built image. Rebuild: `docker compose up -d --build` (a plain restart is not
+  enough).
+- **Can't add/edit labels on a rule in the UI** — provisioned rules are
+  read-only in the UI. Create your own rule in the UI, or edit the provisioning
+  YAML.
+- **The contact point "Test" button always sends SMS to the env default** — the
+  Test payload is synthetic and carries none of your rule's labels/annotations,
+  so `smseagle_channel` / `smseagle_to` / your message don't apply. Test with a
+  real firing rule instead, and watch `docker logs -f smseagle-alert-webhook`.
+- **Voice call reads out labels / firing counts** — you're on an old build; the
+  current one speaks the annotation verbatim with a `PROBLEM.`/`RESOLVED.`
+  prefix. Rebuild (see above).

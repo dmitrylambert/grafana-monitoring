@@ -1,7 +1,13 @@
 # Example Grafana alert rule that sends an SMS when a modem's signal drops.
 # Adjust `datasourceUid` to your Prometheus data source, and the threshold to taste.
-# This routes to the "SMSEagle SMS" contact point via your notification policy
-# (set that contact point as the default receiver, or add a matching route).
+# Route it to the "SMSEagle" contact point via your notification policy.
+#
+# Channel choice: the adapter reads the `smseagle_channel` label below.
+#   smseagle_channel: sms   -> SMS   (this is also the default if the label is absent)
+#   smseagle_channel: call  -> voice call (text-to-speech) — use for high-severity rules
+# Recipients (optional): add an `smseagle_to` label with comma-separated numbers to
+# override the adapter's env default for this alert, e.g.
+#   smseagle_to: "+37120000000,+37120000001"
 apiVersion: 1
 
 groups:
@@ -20,6 +26,8 @@ groups:
           summary: "Modem signal {{ $values.A }} below 30"
         labels:
           severity: warning
+          smseagle_channel: sms   # set to "call" to ring the phone via text-to-speech
+          #smseagle_to: "+37120000000"   # optional: override recipients for this alert
         data:
           - refId: A
             relativeTimeRange: { from: 600, to: 0 }

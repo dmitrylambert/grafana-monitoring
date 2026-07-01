@@ -9,11 +9,15 @@
 #   - Grafana elsewhere on the LAN:                        http://<adapter-host-ip>:9099/
 apiVersion: 1
 
+# One contact point handles both channels. Whether an alert goes out as an SMS
+# or a text-to-speech voice call is decided by the alert's `smseagle_channel`
+# label (`call`/`voice`/`tts` => voice call; anything else => SMS). See
+# alert-rule.example.yaml.
 contactPoints:
   - orgId: 1
-    name: SMSEagle SMS
+    name: SMSEagle
     receivers:
-      - uid: smseagle-sms-webhook
+      - uid: smseagle-webhook
         type: webhook
         settings:
           url: http://smseagle-alert-webhook:9099/

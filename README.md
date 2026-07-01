@@ -7,6 +7,11 @@ various devices/services and ship them to **Grafana Cloud** (Prometheus
 Each project lives in its own folder and is self-contained — copy the folder,
 fill in a `.env`, and `docker compose up`.
 
+## 🎬 Video tutorial
+
+A step-by-step walkthrough of setting up Grafana monitoring for SMSEagle:
+[**Watch on YouTube**](https://youtu.be/luwVy0uvcm4).
+
 ## Projects
 
 | Project | Description |

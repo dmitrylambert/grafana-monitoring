@@ -9,6 +9,11 @@ sidecar turns the JSON responses into Prometheus metrics, which
 A built-in **offline mock** replays captured API responses so you can develop
 without access to the device.
 
+## 🎬 Video tutorial
+
+Prefer to follow along? Watch the full setup walkthrough:
+[**Grafana SMSEagle monitoring on YouTube**](https://youtu.be/luwVy0uvcm4).
+
 ## Architecture
 
 ```

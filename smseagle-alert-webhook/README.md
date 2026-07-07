@@ -10,25 +10,18 @@ call.
 Grafana Alerting ──webhook──▶ smseagle-alert-webhook ──APIv2──▶ SMSEagle ──▶ SMS / voice call
 ```
 
-**One contact point handles both.** The channel is chosen by an alert **label**,
-`smseagle_channel`:
+**One contact point handles both**, driven by two alert **labels** you set
+per-rule:
 
-| `smseagle_channel` | Result | SMSEagle endpoint |
-|---|---|---|
-| `sms` *(or label absent)* | SMS — the default | `POST /messages/sms` |
-| `call` (or `voice` / `tts`) | Voice call (text-to-speech) | `POST /calls/tts_advanced` |
+- **`smseagle_channel`** picks the channel — `call` (or `voice`/`tts`) rings a
+  phone via text-to-speech; anything else, or omitting it, sends an SMS (the
+  default). Put `smseagle_channel: call` on high-severity rules (much harder to
+  sleep through than an SMS) and leave it off everywhere else.
+- **`smseagle_to`** overrides recipients — a comma-separated list of numbers for
+  that specific alert, so on-call routing can live in the rule. Omit it to fall
+  back to the `.env` defaults.
 
-Put `smseagle_channel: call` on your high-severity alert rules to ring a phone
-(much harder to sleep through than an SMS); leave it off everywhere else for SMS.
-
-**Recipients** default to the `.env` numbers, but any alert can override them with
-an `smseagle_to` label (comma-separated numbers) — so on-call routing can live in
-the alert rule too:
-
-| Label | Effect |
-|---|---|
-| `smseagle_to: +37120000000,+37120000001` | Send this alert to those numbers instead of the env default |
-| *(label absent)* | Use `SMSEAGLE_SMS_TO` / `SMSEAGLE_CALL_TO` from `.env` |
+Both labels, with every accepted value, are specified just below.
 
 ## Supported alert labels (reference)
 
@@ -104,10 +97,10 @@ SMSEagle's Email2SMS poller instead.
 
 ## Wire up your Grafana
 
-> This is a **device-bound** path: your Grafana must be able to reach the adapter
-> (and the adapter reaches the SMSEagle). A **self-hosted Grafana on the same
-> LAN** is the clean fit. Grafana Cloud cannot reach a private LAN — for that,
-> use SMSEagle's Email2SMS poller instead.
+Two ways to configure Grafana — the **UI** (Option A) or **provisioning files**
+(Option B). Both set up the same thing: a `SMSEagle` webhook contact point and a
+notification policy routing alerts to it. (Reachability caveats — Grafana must
+be able to reach the adapter — are covered in [When to use this](#when-to-use-this).)
 
 ### Option A — Grafana UI
 
@@ -140,7 +133,7 @@ Copy the examples in [`examples/grafana-provisioning/`](./examples/grafana-provi
 into your Grafana provisioning directory (typically
 `/etc/grafana/provisioning/alerting/`) and restart Grafana:
 
-- [`contactpoints.yaml`](./examples/grafana-provisioning/contactpoints.yaml) — the single `SMSEagle` webhook contact point. **You must edit the `url:`** to the adapter's address as reachable *from Grafana* (a Docker network name only resolves inside that network; from another host use the adapter machine's IP, e.g. `http://192.168.1.50:9099/`). The options are spelled out in the file's comments.
+- [`contactpoints.yaml`](./examples/grafana-provisioning/contactpoints.yaml) — the single `SMSEagle` webhook contact point. **You must edit the `url:`** to the adapter's address as reachable *from Grafana* — the same three options as Option A above, spelled out in the file's comments.
 - [`policies.yaml`](./examples/grafana-provisioning/policies.yaml) — the notification policy that routes alerts to `SMSEagle`. **This is what makes "just create rules" work** — without it, alerts go to Grafana's default email receiver, not the webhook.
 - [`alert-rule.example.yaml`](./examples/grafana-provisioning/alert-rule.example.yaml) — a sample "signal low" rule showing the `smseagle_channel` label (set your Prometheus datasource UID + threshold)
 

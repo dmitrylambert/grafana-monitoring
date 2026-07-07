@@ -64,15 +64,43 @@ SMSEagle's Email2SMS poller instead.
 
 ## Quick start
 
-1. On the SMSEagle, ensure the API token has the **Send SMS** permission (and
-   **Send calls** too, if you want voice-call alerts). For voice calls also note
-   a TTS voice model id under *Calls → TTS Voice models*.
-2. Configure and start:
+1. **Prepare the SMSEagle** — ensure the API token has the **Send SMS**
+   permission (and **Send calls** too, if you want voice-call alerts). For voice
+   calls also note a TTS voice model id under *Calls → TTS Voice models*.
+
+2. **Clone the repository** and enter this service's directory:
    ```bash
-   cp .env.example .env      # set token + recipient number(s)
+   git clone https://github.com/dmitrylambert/grafana-monitoring.git
+   cd grafana-monitoring/smseagle-alert-webhook
+   ```
+
+3. **Create your config** from the example:
+   ```bash
+   cp .env.example .env
+   ```
+
+4. **Edit `.env`** and fill in your values (open it with any editor, e.g.
+   `nano .env`):
+   - `SMSEAGLE_API_URL` — replace `<smseagle-ip>` with your device's IP/hostname
+   - `SMSEAGLE_ACCESS_TOKEN` — paste your APIv2 token
+   - `SMSEAGLE_SMS_TO` — default recipient number(s); can be overridden per-alert
+     from the Grafana UI via the `smseagle_to` label
+   - (optional) uncomment the voice-call vars if you want calls
+   - keep `SMSEAGLE_TEST_MODE=true` for now to validate without sending real SMS
+
+5. **Build and start the container:**
+   ```bash
    docker compose up -d --build
    ```
-3. Health check: `curl http://localhost:9099/healthz` → `ok`.
+   (After later edits to `.env` or `app.py`, re-run this same command — a plain
+   restart won't rebuild the image.)
+
+6. **Health check:**
+   ```bash
+   curl http://localhost:9099/healthz    # -> ok
+   ```
+   Watch logs with `docker compose logs -f` while you test. Once wired up and
+   verified, set `SMSEAGLE_TEST_MODE=false` and rebuild for real delivery.
 
 ## Wire up your Grafana
 
@@ -132,8 +160,8 @@ The body is a status word followed by your alert's message annotation
 `PROBLEM.` when firing and `RESOLVED.` when the alert clears:
 
 ```
-PROBLEM. SMS outbox > 20 on smseagle-192.168.1.213
-RESOLVED. SMS outbox > 20 on smseagle-192.168.1.213
+PROBLEM. SMS outbox > 20 on smseagle-gateway
+RESOLVED. SMS outbox > 20 on smseagle-gateway
 ```
 
 The message is taken from the alert's `message`, `summary`, or `description`

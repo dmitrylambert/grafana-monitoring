@@ -18,7 +18,7 @@ comma-separated list of numbers); otherwise the env defaults are used.
 No external dependencies (Python stdlib only).
 
 Configuration (environment variables):
-  SMSEAGLE_API_URL        Base APIv2 URL, e.g. https://192.168.1.213/api/v2
+  SMSEAGLE_API_URL        Base APIv2 URL, e.g. https://<smseagle-ip>/api/v2
   SMSEAGLE_ACCESS_TOKEN   APIv2 access token (needs "Send SMS" and/or "Send calls" permission)
   SMSEAGLE_SMS_TO         Comma-separated recipient numbers, e.g. +37120000000,+37120000001
   SMSEAGLE_CALL_TO        Comma-separated numbers for voice calls. Falls back to SMSEAGLE_SMS_TO.

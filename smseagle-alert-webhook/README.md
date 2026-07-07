@@ -142,7 +142,6 @@ into your Grafana provisioning directory (typically
 
 - [`contactpoints.yaml`](./examples/grafana-provisioning/contactpoints.yaml) — the single `SMSEagle` webhook contact point
 - [`alert-rule.example.yaml`](./examples/grafana-provisioning/alert-rule.example.yaml) — a sample "signal low" rule showing the `smseagle_channel` label (set your Prometheus datasource UID + threshold)
-- [`label-anchor.example.yaml`](./examples/grafana-provisioning/label-anchor.example.yaml) — a rule that **never fires** but carries `smseagle_channel` and `smseagle_to`, so Grafana keeps offering those names in the label autocomplete on your real rules. Self-contained (no datasource needed).
 
 Then point your notification policy's default receiver at `SMSEagle`, and set
 `smseagle_channel: call` on whichever alert rules should ring a phone.

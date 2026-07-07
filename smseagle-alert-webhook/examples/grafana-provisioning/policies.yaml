@@ -1,0 +1,25 @@
+# Example Grafana notification policy that routes alerts to the SMSEagle
+# contact point. Drop into your Grafana provisioning dir (e.g.
+# /etc/grafana/provisioning/alerting/) alongside contactpoints.yaml.
+#
+# This is what makes "just create alert rules" actually work: without a policy
+# routing to the SMSEagle receiver, alerts fall through to Grafana's default
+# receiver (email) and never reach the webhook.
+#
+# IMPORTANT — this provisions the ROOT policy:
+#   * It replaces Grafana's entire default notification-policy tree, so EVERY
+#     alert (that doesn't match a more specific nested route) goes to SMSEagle.
+#   * While provisioned, the Notification Policies page is READ-ONLY in the UI.
+#     To change routing, edit this file and reload/restart Grafana.
+# If you'd rather keep Grafana's default policy and only send some alerts to
+# SMSEagle, don't use this file — instead add a nested route in the UI, or set
+# `receiver: grafana-default-email` here and add `routes:` that match by label.
+apiVersion: 1
+
+policies:
+  - orgId: 1
+    receiver: SMSEagle            # must match the contact point name in contactpoints.yaml
+    group_by: ["grafana_folder", "alertname"]
+    group_wait: 10s               # wait before sending the first notification for a new group
+    group_interval: 1m            # wait before sending a notification about new alerts added to a group
+    repeat_interval: 4h           # how often to resend if the alert is still firing

@@ -1,0 +1,52 @@
+# "Label anchor" rule — its only job is to keep `smseagle_channel` and
+# `smseagle_to` alive in Grafana's label autocomplete. It carries both labels
+# but is built to NEVER fire, so it never sends an SMS or call.
+#
+# Why this exists: Grafana's label-key/value suggestions come from labels it has
+# already seen on existing rules/instances. Keep this rule provisioned and those
+# names will always be offered when you add labels to your real rules. The
+# suggestion is only a convenience — you can always type the labels by hand.
+#
+# How it can't fire: refId A is a constant expression (value = 1), and the
+# condition checks A < 0, which is always false. No datasource is required.
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: smseagle
+    folder: SMSEagle
+    interval: 10m           # rarely evaluated; it can't fire anyway
+    rules:
+      - uid: smseagle-label-anchor
+        title: SMSEagle Label Anchor (never fires)
+        condition: C
+        noDataState: OK      # never treat as NoData -> never alerts
+        execErrState: OK     # never treat errors as alerting
+        annotations:
+          summary: "Anchor rule so smseagle_channel / smseagle_to stay in autocomplete. Never fires."
+        labels:
+          smseagle_channel: sms
+          smseagle_to: "+37120000000,+37120000001"
+        data:
+          - refId: A
+            relativeTimeRange: { from: 0, to: 0 }
+            datasourceUid: __expr__
+            model:
+              datasource: { type: __expr__, uid: __expr__ }
+              type: math
+              expression: "1"        # constant value 1
+              refId: A
+          - refId: C
+            relativeTimeRange: { from: 0, to: 0 }
+            datasourceUid: __expr__
+            model:
+              datasource: { type: __expr__, uid: __expr__ }
+              type: threshold
+              expression: A
+              refId: C
+              conditions:
+                - type: query
+                  evaluator: { type: lt, params: [0] }   # 1 < 0 -> always false
+                  operator: { type: and }
+                  query: { params: [A] }
+                  reducer: { type: last }

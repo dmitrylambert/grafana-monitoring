@@ -30,6 +30,30 @@ the alert rule too:
 | `smseagle_to: +37120000000,+37120000001` | Send this alert to those numbers instead of the env default |
 | *(label absent)* | Use `SMSEAGLE_SMS_TO` / `SMSEAGLE_CALL_TO` from `.env` |
 
+## Supported alert labels (reference)
+
+These are the **only** two labels the adapter reads. Add them in a rule's
+*Labels* section (*Configure labels and notifications*). Values are
+case-insensitive and whitespace is trimmed. If a label is on the notification's
+`commonLabels` it's used; otherwise the first alert's own labels are read.
+
+| Label | Accepted values | Meaning |
+|---|---|---|
+| `smseagle_channel` | `call`, `voice`, `tts` | Place a **voice call** (text-to-speech) |
+| `smseagle_channel` | `sms`, any other value, or **absent** | Send an **SMS** (the default) |
+| `smseagle_to` | comma-separated E.164 numbers, e.g. `+37120000000,+37120000001` | Override recipients for **this** alert |
+| `smseagle_to` | **absent** or empty | Use `SMSEAGLE_CALL_TO` (for calls) / `SMSEAGLE_SMS_TO` (for SMS) from `.env` |
+
+Notes:
+- `voice` and `tts` are aliases for `call` — all three ring a phone. Everything
+  else (including a typo like `cal`) falls through to **SMS**, so mistakes fail
+  safe to a text rather than an unexpected call.
+- The label *names* are configurable via `SMSEAGLE_CHANNEL_LABEL` /
+  `SMSEAGLE_TO_LABEL` env vars; the defaults are `smseagle_channel` /
+  `smseagle_to`.
+- No other labels are interpreted — severity, team, etc. are ignored by the
+  adapter (use them in Grafana notification-policy routing instead).
+
 ## When to use this
 
 Grafana alerting → SMSEagle is a **device-bound** path: the alerting engine must

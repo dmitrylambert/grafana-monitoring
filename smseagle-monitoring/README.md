@@ -30,18 +30,24 @@ SMSEagle APIv2 ──JSON──▶ json-exporter ──Prometheus──▶ Alloy
 
 ## Quick start
 
-1. Copy the env template and fill it in:
+1. Clone the repository and enter this project's folder:
+   ```bash
+   git clone https://github.com/dmitrylambert/grafana-monitoring.git
+   cd grafana-monitoring/smseagle-monitoring
+   ```
+
+2. Copy the env template and fill it in:
    ```bash
    cp .env.example .env
    ```
    Set your SMSEagle APIv2 token and Grafana Cloud Prometheus credentials.
 
-2. Start the stack:
+3. Start the stack:
    ```bash
    docker compose up -d
    ```
 
-3. Check it locally:
+4. Check it locally:
    - Alloy UI: <http://localhost:12345>
    - Mock API: <http://localhost:8088/api/v2/modem/full_info>
 

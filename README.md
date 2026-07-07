@@ -4,8 +4,23 @@ A collection of self-hostable monitoring stacks that collect metrics from
 various devices/services and ship them to **Grafana Cloud** (Prometheus
 `remote_write`) using **Grafana Alloy**.
 
-Each project lives in its own folder and is self-contained — copy the folder,
+Each project lives in its own folder and is self-contained — clone the repo,
 fill in a `.env`, and `docker compose up`.
+
+## Getting started
+
+Clone the repository, then `cd` into whichever project you want:
+
+```bash
+git clone https://github.com/dmitrylambert/grafana-monitoring.git
+cd grafana-monitoring
+
+# then pick a project, e.g.
+cd smseagle-alert-webhook     # or: cd smseagle-monitoring
+```
+
+From there follow that project's `README.md` (each has its own Quick start:
+`cp .env.example .env`, edit it, then `docker compose up -d`).
 
 ## 🎬 Video tutorial
 

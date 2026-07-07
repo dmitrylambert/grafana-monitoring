@@ -30,6 +30,30 @@ the alert rule too:
 | `smseagle_to: +37120000000,+37120000001` | Send this alert to those numbers instead of the env default |
 | *(label absent)* | Use `SMSEAGLE_SMS_TO` / `SMSEAGLE_CALL_TO` from `.env` |
 
+## Supported alert labels (reference)
+
+These are the **only** two labels the adapter reads. Add them in a rule's
+*Labels* section (*Configure labels and notifications*). Values are
+case-insensitive and whitespace is trimmed. If a label is on the notification's
+`commonLabels` it's used; otherwise the first alert's own labels are read.
+
+| Label | Accepted values | Meaning |
+|---|---|---|
+| `smseagle_channel` | `call`, `voice`, `tts` | Place a **voice call** (text-to-speech) |
+| `smseagle_channel` | `sms`, any other value, or **absent** | Send an **SMS** (the default) |
+| `smseagle_to` | comma-separated E.164 numbers, e.g. `+37120000000,+37120000001` | Override recipients for **this** alert |
+| `smseagle_to` | **absent** or empty | Use `SMSEAGLE_CALL_TO` (for calls) / `SMSEAGLE_SMS_TO` (for SMS) from `.env` |
+
+Notes:
+- `voice` and `tts` are aliases for `call` — all three ring a phone. Everything
+  else (including a typo like `cal`) falls through to **SMS**, so mistakes fail
+  safe to a text rather than an unexpected call.
+- The label *names* are configurable via `SMSEAGLE_CHANNEL_LABEL` /
+  `SMSEAGLE_TO_LABEL` env vars; the defaults are `smseagle_channel` /
+  `smseagle_to`.
+- No other labels are interpreted — severity, team, etc. are ignored by the
+  adapter (use them in Grafana notification-policy routing instead).
+
 ## When to use this
 
 Grafana alerting → SMSEagle is a **device-bound** path: the alerting engine must
@@ -40,15 +64,43 @@ SMSEagle's Email2SMS poller instead.
 
 ## Quick start
 
-1. On the SMSEagle, ensure the API token has the **Send SMS** permission (and
-   **Send calls** too, if you want voice-call alerts). For voice calls also note
-   a TTS voice model id under *Calls → TTS Voice models*.
-2. Configure and start:
+1. **Prepare the SMSEagle** — ensure the API token has the **Send SMS**
+   permission (and **Send calls** too, if you want voice-call alerts). For voice
+   calls also note a TTS voice model id under *Calls → TTS Voice models*.
+
+2. **Clone the repository** and enter this service's directory:
    ```bash
-   cp .env.example .env      # set token + recipient number(s)
+   git clone https://github.com/dmitrylambert/grafana-monitoring.git
+   cd grafana-monitoring/smseagle-alert-webhook
+   ```
+
+3. **Create your config** from the example:
+   ```bash
+   cp .env.example .env
+   ```
+
+4. **Edit `.env`** and fill in your values (open it with any editor, e.g.
+   `nano .env`):
+   - `SMSEAGLE_API_URL` — replace `<smseagle-ip>` with your device's IP/hostname
+   - `SMSEAGLE_ACCESS_TOKEN` — paste your APIv2 token
+   - `SMSEAGLE_SMS_TO` — default recipient number(s); can be overridden per-alert
+     from the Grafana UI via the `smseagle_to` label
+   - (optional) uncomment the voice-call vars if you want calls
+   - keep `SMSEAGLE_TEST_MODE=true` for now to validate without sending real SMS
+
+5. **Build and start the container:**
+   ```bash
    docker compose up -d --build
    ```
-3. Health check: `curl http://localhost:9099/healthz` → `ok`.
+   (After later edits to `.env` or `app.py`, re-run this same command — a plain
+   restart won't rebuild the image.)
+
+6. **Health check:**
+   ```bash
+   curl http://localhost:9099/healthz    # -> ok
+   ```
+   Watch logs with `docker compose logs -f` while you test. Once wired up and
+   verified, set `SMSEAGLE_TEST_MODE=false` and rebuild for real delivery.
 
 ## Wire up your Grafana
 
@@ -107,8 +159,8 @@ The body is a status word followed by your alert's message annotation
 `PROBLEM.` when firing and `RESOLVED.` when the alert clears:
 
 ```
-PROBLEM. SMS outbox > 20 on smseagle-192.168.1.213
-RESOLVED. SMS outbox > 20 on smseagle-192.168.1.213
+PROBLEM. SMS outbox > 20 on smseagle-gateway
+RESOLVED. SMS outbox > 20 on smseagle-gateway
 ```
 
 The message is taken from the alert's `message`, `summary`, or `description`

@@ -138,13 +138,23 @@ SMSEagle's Email2SMS poller instead.
 
 Copy the examples in [`examples/grafana-provisioning/`](./examples/grafana-provisioning/)
 into your Grafana provisioning directory (typically
-`/etc/grafana/provisioning/alerting/`):
+`/etc/grafana/provisioning/alerting/`) and restart Grafana:
 
-- [`contactpoints.yaml`](./examples/grafana-provisioning/contactpoints.yaml) — the single `SMSEagle` webhook contact point
+- [`contactpoints.yaml`](./examples/grafana-provisioning/contactpoints.yaml) — the single `SMSEagle` webhook contact point. **You must edit the `url:`** to the adapter's address as reachable *from Grafana* (a Docker network name only resolves inside that network; from another host use the adapter machine's IP, e.g. `http://192.168.1.50:9099/`). The options are spelled out in the file's comments.
+- [`policies.yaml`](./examples/grafana-provisioning/policies.yaml) — the notification policy that routes alerts to `SMSEagle`. **This is what makes "just create rules" work** — without it, alerts go to Grafana's default email receiver, not the webhook.
 - [`alert-rule.example.yaml`](./examples/grafana-provisioning/alert-rule.example.yaml) — a sample "signal low" rule showing the `smseagle_channel` label (set your Prometheus datasource UID + threshold)
 
-Then point your notification policy's default receiver at `SMSEagle`, and set
-`smseagle_channel: call` on whichever alert rules should ring a phone.
+With `contactpoints.yaml` + `policies.yaml` provisioned (and the adapter
+running, see [Quick start](#quick-start)), you then **just create alert rules** —
+they route to SMSEagle automatically. Set `smseagle_channel: call` on whichever
+rules should ring a phone.
+
+> **Heads up:** `policies.yaml` provisions the **root** notification policy —
+> it replaces Grafana's default policy tree (so *all* alerts route to SMSEagle
+> unless a nested route says otherwise), and the Notification Policies page
+> becomes **read-only** in the UI while provisioned. To change routing later,
+> edit the file and restart Grafana. If you only want *some* alerts on SMSEagle,
+> skip this file and add a route in the UI instead (Option A, step 2).
 
 ### Testing safely
 

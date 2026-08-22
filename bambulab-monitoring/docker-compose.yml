@@ -1,0 +1,19 @@
+services:
+  bambulab-exporter:
+    # Built from the fork with the local-MQTT startup fix
+    # (upstream: TheBlackBush/bambulab_metrics_exporter, GPL-3.0)
+    build: https://github.com/dmitrylambert/bambulab_metrics_exporter.git
+    image: bambulab-metrics-exporter:local
+    container_name: bambulab-exporter
+    restart: unless-stopped
+    environment:
+      BAMBULAB_HOST: ${BAMBULAB_HOST}
+      BAMBULAB_SERIAL: ${BAMBULAB_SERIAL}
+      BAMBULAB_ACCESS_CODE: ${BAMBULAB_ACCESS_CODE}
+      # Local MQTT mode cannot auto-discover model/name (cloud-only feature);
+      # the dashboard needs bambulab_printer_model_info populated.
+      BAMBULAB_PRINTER_MODEL: ${BAMBULAB_PRINTER_MODEL}
+      BAMBULAB_PRINTER_NAME: ${BAMBULAB_PRINTER_NAME}
+    ports:
+      - "9109:9109"
+

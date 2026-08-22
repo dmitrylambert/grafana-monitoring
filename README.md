@@ -31,7 +31,7 @@ A step-by-step walkthrough of setting up Grafana monitoring for SMSEagle:
 
 | Project | Description |
 |---------|-------------|
-| [`bambulab-monitoring`](./bambulab-monitoring) | Monitor a [Bambu Lab](https://bambulab.com/) 3D printer (P1S + AMS) over local MQTT — temperatures, print progress, fans, AMS filament inventory and humidity. Ships a Prometheus exporter, Grafana dashboard, and alert rules; fully local, no Bambu Cloud needed. |
+| [`bambulab-grafana-monitoring`](https://github.com/dmitrylambert/bambulab-grafana-monitoring) | Monitor a [Bambu Lab](https://bambulab.com/) 3D printer (P1S + AMS) over local MQTT — temperatures, print progress, fans, AMS filament inventory and humidity. Prometheus exporter, Grafana dashboard, and alert rules; fully local, no Bambu Cloud needed. *(own repository)* |
 | [`smseagle-monitoring`](./smseagle-monitoring) | Monitor an [SMSEagle](https://www.smseagle.eu/) hardware SMS gateway via its APIv2 — modem signal, SIM/network health, message queue, and device/service status. Includes a Grafana dashboard and an offline mock for development without the device. |
 | [`smseagle-alert-webhook`](./smseagle-alert-webhook) | Use an SMSEagle gateway as the SMS **and voice-call** notifier for Grafana alerts. A small webhook service that turns Grafana alert notifications into SMS or a text-to-speech voice call via the APIv2, with the channel and recipients chosen per-rule by alert labels. Best with self-hosted Grafana on the same LAN. |
 

@@ -10,10 +10,9 @@ services:
       BAMBULAB_HOST: ${BAMBULAB_HOST}
       BAMBULAB_SERIAL: ${BAMBULAB_SERIAL}
       BAMBULAB_ACCESS_CODE: ${BAMBULAB_ACCESS_CODE}
-      # Local MQTT mode cannot auto-discover model/name (cloud-only feature);
-      # the dashboard needs bambulab_printer_model_info populated.
-      BAMBULAB_PRINTER_MODEL: ${BAMBULAB_PRINTER_MODEL}
-      BAMBULAB_PRINTER_NAME: ${BAMBULAB_PRINTER_NAME}
+      # Optional: sets the printer_name label on all metrics
+      # (defaults to "bambulab"; LAN mode cannot auto-discover the name)
+      BAMBULAB_PRINTER_NAME: ${BAMBULAB_PRINTER_NAME:-bambulab}
     ports:
       - "9109:9109"
 

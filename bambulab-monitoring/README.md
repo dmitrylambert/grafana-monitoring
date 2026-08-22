@@ -99,9 +99,9 @@ Attach your own contact points/notification policies.
 - **Filament remaining shows "unknown"?** Enable *Update remaining capacity*
   in Bambu Studio: Device tab → gear icon next to the AMS graphic. The
   estimate populates as each spool is next loaded.
-- In LAN mode the exporter cannot auto-discover the printer model/name —
-  that's what `BAMBULAB_PRINTER_MODEL` / `BAMBULAB_PRINTER_NAME` are for
-  (they become the `printer_name` label on every metric).
+- `BAMBULAB_PRINTER_NAME` is optional — it becomes the `printer_name` label
+  on every metric (LAN mode cannot auto-discover the name; unset, it defaults
+  to `bambulab`).
 - The P1S has no chamber temperature sensor; the value it reports is
   meaningless and is intentionally not on the dashboard.
 
